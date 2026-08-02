@@ -8,18 +8,9 @@ find_package(PkgConfig REQUIRED)
 find_package(Git QUIET)
 
 set(MATLAB_LITE_VERSION "1.0.1")
-if(GIT_FOUND)
-    execute_process(
-        COMMAND ${GIT_EXECUTABLE} describe --tags --dirty --always --abbrev=7
-        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-        OUTPUT_VARIABLE MATLAB_LITE_VERSION
-        OUTPUT_STRIP_TRAILING_WHITESPACE
-        ERROR_QUIET
-    )
-endif()
 
 if(MATLAB_LITE_VERSION STREQUAL "")
-    set(MATLAB_LITE_VERSION "1.0.0")
+    set(MATLAB_LITE_VERSION "0.0.0")
 endif()
 
 configure_file(
