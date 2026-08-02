@@ -2,7 +2,7 @@
 
 APP_NAME := matlab-lite
 APP_ID := com.michal.MatlabLite
-VERSION ?= $(shell git describe --tags --dirty --always --abbrev=7 2>/dev/null || echo 1.0.0)
+VERSION ?= 1.0.1
 PROJECT_ROOT := $(CURDIR)
 BUILD_DIR := build
 DIST_DIR := dist
@@ -51,7 +51,7 @@ deb: build
 	@dpkg-deb --build --root-owner-group "$(DEB_ROOT)" "$(DIST_DIR)/$(APP_NAME)_$(VERSION)_$(DEB_ARCH).deb"
 
 rpm: build
-	@command -v rpmbuild >/dev/null 2>&1 || { echo "rpmbuild is required to build RPMs"; exit 1; }
+	@command -v rpmbuild >/dev/null 2>&1 || { echo "rpmbuild is required to build RPMs (Debian/Ubuntu: sudo apt install rpm; Fedora/RHEL: sudo dnf install rpm-build)"; exit 1; }
 	@rm -rf "$(RPM_TOP)" "$(DIST_DIR)"
 	@mkdir -p "$(RPM_TOP)/BUILD" \
 		"$(RPM_TOP)/RPMS" \
@@ -72,21 +72,3 @@ rpm: build
 		installer/matlab-lite.desktop.in > "$(RPM_TOP)/SOURCES/$(APP_NAME).desktop"
 	@rpmbuild --define "_topdir $(abspath $(RPM_TOP))" -bb "$(RPM_TOP)/SPECS/$(APP_NAME).spec"
 	@find "$(RPM_TOP)/RPMS" -name '*.rpm' -exec cp {} "$(DIST_DIR)"/ \;
-
-appimage: build
-	@rm -rf "$(APPIMAGE_DIR)" "$(DIST_DIR)"
-	@mkdir -p "$(APPIMAGE_DIR)/usr/bin" \
-		"$(APPIMAGE_DIR)/usr/share/applications" \
-		"$(APPIMAGE_DIR)/usr/share/icons/hicolor/256x256/apps" \
-		"$(DIST_DIR)"
-	@install -Dm755 "$(BUILD_DIR)/$(APP_NAME)" "$(APPIMAGE_DIR)/usr/bin/$(APP_NAME)"
-	@install -Dm644 "icon.png" "$(APPIMAGE_DIR)/usr/share/icons/hicolor/256x256/apps/$(APP_NAME).png"
-	@sed \
-		-e "s|__BIN__|matlab-lite|g" \
-		-e "s|__ICON__|matlab-lite|g" \
-		installer/matlab-lite.desktop.in > "$(APPIMAGE_DIR)/usr/share/applications/$(APP_NAME).desktop"
-	@install -Dm755 packaging/appimage/AppRun "$(APPIMAGE_DIR)/AppRun"
-	@command -v linuxdeploy >/dev/null 2>&1 || { echo "linuxdeploy is required to bundle GTK dependencies for an AppImage"; echo "AppDir scaffold prepared under $(APPIMAGE_DIR)"; exit 1; }
-	@command -v appimagetool >/dev/null 2>&1 || { echo "appimagetool is required to turn the AppDir into an AppImage"; echo "AppDir scaffold prepared under $(APPIMAGE_DIR)"; exit 1; }
-	@appimagetool "$(APPIMAGE_DIR)" "$(DIST_DIR)/$(APP_NAME)-$(VERSION)-$$(uname -m).AppImage"
-	

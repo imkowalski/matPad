@@ -28,7 +28,7 @@ MATLAB Lite is licensed under the GNU Affero General Public License v3.0 or late
 ## Configuration
 
 This build is not fully device agnostic yet. It expects MATLAB at `/usr/local/bin/matlab`, so if your system uses a different path, update the runner configuration in the source before building.
-The app version is generated from Git during CMake configure time and is also used by the packaging targets.
+The app uses a simple fixed version number, currently `1.0.1`, which is also used by the packaging targets.
 
 ## Build
 
@@ -72,14 +72,14 @@ The root `Makefile` includes packaging targets:
 ```bash
 make deb
 make rpm
-make appimage
+make flatpak
 ```
 
 - `make deb` creates a Debian package in `dist/` using `dpkg-deb`.
 - `make rpm` creates an RPM when `rpmbuild` is installed.
-- `make appimage` stages an AppDir and then builds an AppImage when `linuxdeploy` and `appimagetool` are installed.
+- `make flatpak` builds a Flatpak bundle when `flatpak-builder` and `flatpak` are installed.
 
-The `.deb`, `.rpm`, and `.AppImage` outputs use the app icon from `icon.png`.
+The `.deb`, `.rpm`, and `.flatpak` outputs use the app icon from `icon.png`.
 
 To build packages for a specific version, pass `VERSION` on the command line:
 
@@ -93,5 +93,5 @@ make VERSION=1.2.3 appimage
 
 - The `.deb` target is system-wide and installs into `/usr`.
 - The RPM target is system-wide and installs into `/usr`.
-- The AppImage target is a scaffold unless the extra AppImage tooling is installed.
+- The Flatpak target builds a sandboxed package; MATLAB is still executed on the host via `flatpak-spawn --host`.
 

@@ -13,20 +13,11 @@ cmake -B build
 cmake --build build
 ```
 
-## Build a Specific Version
+## Build a Specific Version (deb/rpm)
 
-The packaging targets use the `VERSION` variable from the `Makefile`.
 
 ```bash
-make VERSION=1.2.3 deb
-make VERSION=1.2.3 rpm
-make VERSION=1.2.3 appimage
+make deb
+make rpm
 ```
 
-That version string is written into the package filenames and metadata.
-
-## Notes
-
-- `make deb` requires `dpkg-deb`.
-- `make rpm` requires `rpmbuild`.
-- `make appimage` requires `linuxdeploy` and `appimagetool`.

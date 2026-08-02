@@ -8,6 +8,7 @@
 #include <cctype>
 #include <cstdio>
 #include <cstdlib>
+#include <glib/gstdio.h>
 #include <fstream>
 #include <regex>
 #include <sstream>
@@ -19,6 +20,42 @@
 #include <vector>
 
 #define MATLAB_PATH "/usr/local/bin/matlab"
+
+static bool running_in_flatpak() {
+    return g_getenv("FLATPAK_ID") != nullptr;
+}
+
+static std::string shell_quote(const std::string &value) {
+    std::string quoted = "'";
+    for (char ch : value) {
+        if (ch == '\'') {
+            quoted += "'\\''";
+        } else {
+            quoted += ch;
+        }
+    }
+    quoted += "'";
+    return quoted;
+}
+
+static std::string resolve_matlab_command() {
+    const char *override_cmd = g_getenv("MATLAB_LITE_MATLAB_CMD");
+    std::string command = (override_cmd && *override_cmd) ? override_cmd : MATLAB_PATH;
+
+    if (running_in_flatpak()) {
+        return std::string("flatpak-spawn --host ") + shell_quote(command);
+    }
+
+    return shell_quote(command);
+}
+
+static std::string resolve_workspace_dir() {
+    if (running_in_flatpak()) {
+        return std::string(g_get_user_cache_dir()) + "/matlab-lite";
+    }
+
+    return g_get_tmp_dir();
+}
 
 typedef struct {
     MatlabLiteApp *self;
@@ -116,7 +153,8 @@ static void execute_matlab_thread(MatlabLiteApp *self, std::string code) {
         base_name = "Untitled_Plot";
     }
 
-    std::string temp_dir = g_get_tmp_dir();
+    std::string temp_dir = resolve_workspace_dir();
+    g_mkdir_with_parents(temp_dir.c_str(), 0700);
     std::string fig_prefix = temp_dir + "/" + base_name + "_Plot";
 
     remove_old_figure_cache(temp_dir, base_name);
@@ -157,8 +195,8 @@ static void execute_matlab_thread(MatlabLiteApp *self, std::string code) {
         setenv("MESA_DEBUG", "0", 1);
         setenv("QT_X11_NO_MITSHM", "1", 1);
 
-        std::string cmd = std::string(MATLAB_PATH) + " -batch \"warning('off','all'); addpath('" +
-                          script_dir + "'); " + script_name + ";\" 2>&1";
+        std::string cmd = resolve_matlab_command() + " -batch \"warning('off','all'); addpath('" +
+                  script_dir + "'); " + script_name + ";\" 2>&1";
 
         FILE *pipe = popen(cmd.c_str(), "r");
         if (pipe) {

@@ -1,17 +1,12 @@
 cmake_minimum_required(VERSION 3.16)
-project(MatlabLite C CXX)
+project(MatlabLite VERSION 1.0.1 LANGUAGES C CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(PkgConfig REQUIRED)
-find_package(Git QUIET)
 
-set(MATLAB_LITE_VERSION "1.0.1")
-
-if(MATLAB_LITE_VERSION STREQUAL "")
-    set(MATLAB_LITE_VERSION "0.0.0")
-endif()
+set(MATLAB_LITE_VERSION "${PROJECT_VERSION}")
 
 configure_file(
     ${CMAKE_CURRENT_SOURCE_DIR}/include/version.h.in
@@ -56,6 +51,11 @@ target_include_directories(matlab-lite PRIVATE
     ${ADW_INCLUDE_DIRS}
     ${GTK_INCLUDE_DIRS}
     ${SOURCEVIEW_INCLUDE_DIRS}
+)
+
+install(FILES
+    ${CMAKE_CURRENT_SOURCE_DIR}/packaging/flatpak/com.michal.MatlabLite.metainfo.xml
+    DESTINATION share/metainfo
 )
 
 target_link_libraries(matlab-lite
