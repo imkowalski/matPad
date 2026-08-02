@@ -1,0 +1,3 @@
+/home/michal/workspace/Matlab-lite/build/CMakeFiles/matlab-lite.dir
+/home/michal/workspace/Matlab-lite/build/CMakeFiles/edit_cache.dir
+/home/michal/workspace/Matlab-lite/build/CMakeFiles/rebuild_cache.dir
