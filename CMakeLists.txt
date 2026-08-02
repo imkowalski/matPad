@@ -5,6 +5,28 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(PkgConfig REQUIRED)
+find_package(Git QUIET)
+
+set(MATLAB_LITE_VERSION "1.0.1")
+if(GIT_FOUND)
+    execute_process(
+        COMMAND ${GIT_EXECUTABLE} describe --tags --dirty --always --abbrev=7
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        OUTPUT_VARIABLE MATLAB_LITE_VERSION
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+        ERROR_QUIET
+    )
+endif()
+
+if(MATLAB_LITE_VERSION STREQUAL "")
+    set(MATLAB_LITE_VERSION "1.0.0")
+endif()
+
+configure_file(
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/version.h.in
+    ${CMAKE_CURRENT_BINARY_DIR}/generated/version.h
+    @ONLY
+)
 
 # Dependencies matching GI requirements
 pkg_check_modules(ADW REQUIRED libadwaita-1)
@@ -39,6 +61,7 @@ add_executable(matlab-lite
 
 target_include_directories(matlab-lite PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/include
+    ${CMAKE_CURRENT_BINARY_DIR}/generated
     ${ADW_INCLUDE_DIRS}
     ${GTK_INCLUDE_DIRS}
     ${SOURCEVIEW_INCLUDE_DIRS}

@@ -215,6 +215,9 @@ CMAKE_TAPI:FILEPATH=CMAKE_TAPI-NOTFOUND
 // Studio IDE projects all commands are done without /nologo.
 CMAKE_VERBOSE_MAKEFILE:BOOL=FALSE
 
+//Git command line client
+GIT_EXECUTABLE:FILEPATH=/usr/bin/git
+
 //Value Computed by CMake
 MatlabLite_BINARY_DIR:STATIC=/home/michal/workspace/Matlab-lite/build
 
@@ -531,6 +534,8 @@ CMAKE_UNAME:INTERNAL=/usr/bin/uname
 CMAKE_VERBOSE_MAKEFILE-ADVANCED:INTERNAL=1
 //Details about finding PkgConfig
 FIND_PACKAGE_MESSAGE_DETAILS_PkgConfig:INTERNAL=[/usr/bin/pkg-config][v1.8.1()]
+//ADVANCED property for variable: GIT_EXECUTABLE
+GIT_EXECUTABLE-ADVANCED:INTERNAL=1
 GTK_CFLAGS:INTERNAL=-I/usr/include/gtk-4.0;-I/usr/include/pango-1.0;-I/usr/include;-I/usr/include/glib-2.0;-I/usr/lib/x86_64-linux-gnu/glib-2.0/include;-I/usr/include/sysprof-6;-I/usr/include/harfbuzz;-I/usr/include/freetype2;-I/usr/include/libpng16;-I/usr/include/libmount;-I/usr/include/blkid;-I/usr/include/fribidi;-I/usr/include/cairo;-I/usr/include/pixman-1;-I/usr/include/gdk-pixbuf-2.0;-I/usr/include/x86_64-linux-gnu;-I/usr/include/webp;-I/usr/include/graphene-1.0;-I/usr/lib/x86_64-linux-gnu/graphene-1.0/include;-mfpmath=sse;-msse;-msse2;-pthread
 GTK_CFLAGS_I:INTERNAL=
 GTK_CFLAGS_OTHER:INTERNAL=-mfpmath=sse;-msse;-msse2;-pthread

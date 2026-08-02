@@ -991,6 +991,7 @@ CMakeFiles/matlab-lite.dir/src/window.cpp.o: \
  /home/michal/workspace/Matlab-lite/include/app_context.h \
  /home/michal/workspace/Matlab-lite/include/app_utils.h \
  /home/michal/workspace/Matlab-lite/include/runner.h \
+ /home/michal/workspace/Matlab-lite/build/generated/version.h \
  /usr/include/c++/14/fstream /usr/include/c++/14/istream \
  /usr/include/c++/14/ios /usr/include/c++/14/iosfwd \
  /usr/include/c++/14/bits/stringfwd.h \

@@ -11,6 +11,7 @@ set(CMAKE_MAKEFILE_DEPENDS
   "CMakeFiles/3.31.6/CMakeCCompiler.cmake"
   "CMakeFiles/3.31.6/CMakeCXXCompiler.cmake"
   "CMakeFiles/3.31.6/CMakeSystem.cmake"
+  "/home/michal/workspace/Matlab-lite/include/version.h.in"
   "/usr/share/cmake-3.31/Modules/CMakeCInformation.cmake"
   "/usr/share/cmake-3.31/Modules/CMakeCXXInformation.cmake"
   "/usr/share/cmake-3.31/Modules/CMakeCommonLanguageInclude.cmake"
@@ -23,6 +24,7 @@ set(CMAKE_MAKEFILE_DEPENDS
   "/usr/share/cmake-3.31/Modules/Compiler/GNU-C.cmake"
   "/usr/share/cmake-3.31/Modules/Compiler/GNU-CXX.cmake"
   "/usr/share/cmake-3.31/Modules/Compiler/GNU.cmake"
+  "/usr/share/cmake-3.31/Modules/FindGit.cmake"
   "/usr/share/cmake-3.31/Modules/FindPackageHandleStandardArgs.cmake"
   "/usr/share/cmake-3.31/Modules/FindPackageMessage.cmake"
   "/usr/share/cmake-3.31/Modules/FindPkgConfig.cmake"
@@ -52,6 +54,7 @@ set(CMAKE_MAKEFILE_OUTPUTS
 
 # Byproducts of CMake generate step:
 set(CMAKE_MAKEFILE_PRODUCTS
+  "generated/version.h"
   "CMakeFiles/CMakeDirectoryInformation.cmake"
   )
 

@@ -4480,6 +4480,7 @@ CMakeFiles/matlab-lite.dir/src/runner.cpp.o: /home/michal/workspace/Matlab-lite/
   /usr/lib/x86_64-linux-gnu/graphene-1.0/include/graphene-config.h
 
 CMakeFiles/matlab-lite.dir/src/window.cpp.o: /home/michal/workspace/Matlab-lite/src/window.cpp \
+  generated/version.h \
   /home/michal/workspace/Matlab-lite/include/app_context.h \
   /home/michal/workspace/Matlab-lite/include/app_utils.h \
   /home/michal/workspace/Matlab-lite/include/runner.h \
@@ -5908,6 +5909,8 @@ CMakeFiles/matlab-lite.dir/src/app_utils.cpp.o:
 /lib/x86_64-linux-gnu/libX11.so.6:
 
 /lib/x86_64-linux-gnu/libLerc.so.4:
+
+generated/version.h:
 
 /home/michal/workspace/Matlab-lite/src/window.cpp:
 

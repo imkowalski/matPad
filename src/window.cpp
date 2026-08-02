@@ -5,12 +5,13 @@
 
 #include "app_utils.h"
 #include "runner.h"
+#include "version.h"
 
 #include <fstream>
 #include <sstream>
 #include <string>
 
-static const char *APP_VERSION = "1.0.0";
+static const char *APP_VERSION = MATLAB_LITE_VERSION;
 
 static const char *CSS = R"css(
 .editor-box {
@@ -50,9 +51,10 @@ static const char *CSS = R"css(
 
 .clickable-image:hover {
     opacity: 0.85;
-    cursor: pointer;
 }
 )css";
+
+static const char *PROJECT_REPO_URL = "https://github.com/imkowalski/Matlab-lite";
 
 static void on_open_dialog_finish(GObject *source, GAsyncResult *result, gpointer user_data) {
     GtkFileDialog *dialog = GTK_FILE_DIALOG(source);
@@ -156,9 +158,12 @@ static void action_app_info(GSimpleAction *action, GVariant *param, gpointer use
     adw_about_dialog_set_version(about, APP_VERSION);
     adw_about_dialog_set_developer_name(about, "MATLAB Lite");
     adw_about_dialog_set_comments(about, "Desktop MATLAB editor with script execution and plot previews.");
+    adw_about_dialog_set_license_type(about, GTK_LICENSE_AGPL_3_0);
+    adw_about_dialog_set_website(about, PROJECT_REPO_URL);
+    std::string issues_url = std::string(PROJECT_REPO_URL) + "/issues";
+    adw_about_dialog_set_issue_url(about, issues_url.c_str());
 
-    gtk_window_set_transient_for(GTK_WINDOW(about), GTK_WINDOW(self->win));
-    gtk_window_present(GTK_WINDOW(about));
+    adw_dialog_present(ADW_DIALOG(about), GTK_WIDGET(self->win));
 }
 
 static void action_run_script(GSimpleAction *action, GVariant *param, gpointer user_data) {
