@@ -62,7 +62,7 @@ install(FILES
 set(BIN "matpad")
 set(ICON "matpad")
 configure_file(
-    ${CMAKE_CURRENT_SOURCE_DIR}/installer/matpad.desktop.in
+    ${CMAKE_CURRENT_SOURCE_DIR}/packaging/desktop/matpad.desktop.in
     ${CMAKE_CURRENT_BINARY_DIR}/com.michal.Matpad.desktop
     @ONLY
 )

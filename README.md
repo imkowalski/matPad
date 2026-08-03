@@ -53,18 +53,6 @@ make run
 
 The `run` target clears the build directory, rebuilds the app, and launches it.
 
-## Local Install
-
-Run the installer script to build the app, install the binary into `~/.local/bin`, copy the app icon into the local icon theme, and create a desktop entry for GNOME and KDE:
-
-```bash
-bash installer/install.sh
-```
-
-The install script updates existing files in place, so rerunning it upgrades the local install.
-
-The local installer is per-user and keeps files under `~/.local`.
-
 ## Packaging
 
 The root `Makefile` includes packaging targets:

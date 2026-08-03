@@ -1,4 +1,4 @@
-.PHONY: all build clean run install-local deb rpm appimage
+.PHONY: all build clean run deb rpm appimage
 
 APP_NAME := matpad
 APP_ID := com.michal.Matpad
@@ -28,8 +28,6 @@ clean:
 run: clean all 
 	@./build/matpad
 
-install-local: build
-	@bash installer/install.sh
 
 deb: build
 	@rm -rf "$(DEB_ROOT)" "$(DIST_DIR)"
@@ -48,7 +46,7 @@ deb: build
 	@sed \
 		-e "s|@BIN@|/usr/bin/$(APP_NAME)|g" \
 		-e "s|@ICON@|$(APP_NAME)|g" \
-		installer/matpad.desktop.in > "$(DEB_ROOT)/usr/share/applications/$(APP_ID).desktop"
+		packaging/desktop/matpad.desktop.in > "$(DEB_ROOT)/usr/share/applications/$(APP_ID).desktop"
 	@dpkg-deb --build --root-owner-group "$(DEB_ROOT)" "$(DIST_DIR)/$(APP_NAME)_$(VERSION)_$(DEB_ARCH).deb"
 
 rpm: build
@@ -70,7 +68,7 @@ rpm: build
 	@sed \
 		-e "s|@BIN@|matpad|g" \
 		-e "s|@ICON@|matpad|g" \
-		installer/matpad.desktop.in > "$(RPM_TOP)/SOURCES/$(APP_ID).desktop"
+		packaging/desktop/matpad.desktop.in > "$(RPM_TOP)/SOURCES/$(APP_ID).desktop"
 	@rpmbuild --define "_topdir $(abspath $(RPM_TOP))" -bb "$(RPM_TOP)/SPECS/$(APP_NAME).spec"
 	@find "$(RPM_TOP)/RPMS" -name '*.rpm' -exec cp {} "$(DIST_DIR)"/ \;
 
