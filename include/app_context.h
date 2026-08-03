@@ -15,4 +15,8 @@ typedef struct {
     GtkWidget *stop_button;
     char *current_file;
     pid_t matlab_pid;
-} MatlabLiteApp;
+    char *matlab_path;
+    char *python_path;
+    char *python_prepend;
+    gboolean use_python;
+} MatpadApp;

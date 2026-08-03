@@ -5,13 +5,14 @@
 
 #include "app_utils.h"
 #include "runner.h"
+#include "settings.h"
 #include "version.h"
 
 #include <fstream>
 #include <sstream>
 #include <string>
 
-static const char *APP_VERSION = MATLAB_LITE_VERSION;
+static const char *APP_VERSION = MATPAD_VERSION;
 
 static const char *CSS = R"css(
 .editor-box {
@@ -54,11 +55,11 @@ static const char *CSS = R"css(
 }
 )css";
 
-static const char *PROJECT_REPO_URL = "https://github.com/imkowalski/Matlab-lite";
+static const char *PROJECT_REPO_URL = "https://github.com/imkowalski/matpad";
 
 static void on_open_dialog_finish(GObject *source, GAsyncResult *result, gpointer user_data) {
     GtkFileDialog *dialog = GTK_FILE_DIALOG(source);
-    MatlabLiteApp *self = static_cast<MatlabLiteApp *>(user_data);
+    MatpadApp *self = static_cast<MatpadApp *>(user_data);
 
     GError *error = nullptr;
     GFile *file = gtk_file_dialog_open_finish(dialog, result, &error);
@@ -84,7 +85,7 @@ static void on_open_dialog_finish(GObject *source, GAsyncResult *result, gpointe
 
 static void on_save_dialog_finish(GObject *source, GAsyncResult *result, gpointer user_data) {
     GtkFileDialog *dialog = GTK_FILE_DIALOG(source);
-    MatlabLiteApp *self = static_cast<MatlabLiteApp *>(user_data);
+    MatpadApp *self = static_cast<MatpadApp *>(user_data);
 
     GError *error = nullptr;
     GFile *file = gtk_file_dialog_save_finish(dialog, result, &error);
@@ -103,7 +104,7 @@ static void action_new_file(GSimpleAction *action, GVariant *param, gpointer use
     (void)action;
     (void)param;
 
-    MatlabLiteApp *self = static_cast<MatlabLiteApp *>(user_data);
+    MatpadApp *self = static_cast<MatpadApp *>(user_data);
     gtk_text_buffer_set_text(GTK_TEXT_BUFFER(self->buffer), "\n", -1);
     if (self->current_file) {
         g_free(self->current_file);
@@ -117,7 +118,7 @@ static void action_open_file(GSimpleAction *action, GVariant *param, gpointer us
     (void)action;
     (void)param;
 
-    MatlabLiteApp *self = static_cast<MatlabLiteApp *>(user_data);
+    MatpadApp *self = static_cast<MatpadApp *>(user_data);
     GtkFileDialog *dialog = gtk_file_dialog_new();
     gtk_file_dialog_set_title(dialog, "Open MATLAB Script");
     gtk_file_dialog_open(dialog, GTK_WINDOW(self->win), nullptr, on_open_dialog_finish, self);
@@ -127,7 +128,7 @@ static void action_open_file(GSimpleAction *action, GVariant *param, gpointer us
 static void action_save_file_as(GSimpleAction *action, GVariant *param, gpointer user_data);
 
 static void action_save_file(GSimpleAction *action, GVariant *param, gpointer user_data) {
-    MatlabLiteApp *self = static_cast<MatlabLiteApp *>(user_data);
+    MatpadApp *self = static_cast<MatpadApp *>(user_data);
     if (self->current_file) {
         write_to_file(self, self->current_file);
     } else {
@@ -139,7 +140,7 @@ static void action_save_file_as(GSimpleAction *action, GVariant *param, gpointer
     (void)action;
     (void)param;
 
-    MatlabLiteApp *self = static_cast<MatlabLiteApp *>(user_data);
+    MatpadApp *self = static_cast<MatpadApp *>(user_data);
     GtkFileDialog *dialog = gtk_file_dialog_new();
     gtk_file_dialog_set_title(dialog, "Save MATLAB Script");
     gtk_file_dialog_save(dialog, GTK_WINDOW(self->win), nullptr, on_save_dialog_finish, self);
@@ -150,13 +151,13 @@ static void action_app_info(GSimpleAction *action, GVariant *param, gpointer use
     (void)action;
     (void)param;
 
-    MatlabLiteApp *self = static_cast<MatlabLiteApp *>(user_data);
+    MatpadApp *self = static_cast<MatpadApp *>(user_data);
 
     AdwAboutDialog *about = ADW_ABOUT_DIALOG(adw_about_dialog_new());
-    adw_about_dialog_set_application_name(about, "MATLAB Lite");
-    adw_about_dialog_set_application_icon(about, "matlab-lite");
+    adw_about_dialog_set_application_name(about, "MatPad");
+    adw_about_dialog_set_application_icon(about, "matpad");
     adw_about_dialog_set_version(about, APP_VERSION);
-    adw_about_dialog_set_developer_name(about, "MATLAB Lite");
+    adw_about_dialog_set_developer_name(about, "MatPad");
     adw_about_dialog_set_comments(about, "Desktop MATLAB editor with script execution and plot previews.");
     adw_about_dialog_set_license_type(about, GTK_LICENSE_AGPL_3_0);
     adw_about_dialog_set_website(about, PROJECT_REPO_URL);
@@ -166,17 +167,26 @@ static void action_app_info(GSimpleAction *action, GVariant *param, gpointer use
     adw_dialog_present(ADW_DIALOG(about), GTK_WIDGET(self->win));
 }
 
+static void action_app_settings(GSimpleAction *action, GVariant *param, gpointer user_data) {
+    (void)action;
+    (void)param;
+
+    MatpadApp *self = static_cast<MatpadApp *>(user_data);
+    settings_dialog_show(self);
+}
+
+
 static void action_run_script(GSimpleAction *action, GVariant *param, gpointer user_data) {
     (void)action;
     (void)param;
 
-    MatlabLiteApp *self = static_cast<MatlabLiteApp *>(user_data);
+    MatpadApp *self = static_cast<MatpadApp *>(user_data);
     if (gtk_widget_is_sensitive(self->run_button)) {
         on_run_clicked(self->run_button, self);
     }
 }
 
-static void add_app_action(MatlabLiteApp *self, const char *name, GCallback callback, const char *accel) {
+static void add_app_action(MatpadApp *self, const char *name, GCallback callback, const char *accel) {
     GSimpleAction *action = g_simple_action_new(name, nullptr);
     g_signal_connect(action, "activate", callback, self);
     g_action_map_add_action(G_ACTION_MAP(self->app), G_ACTION(action));
@@ -190,7 +200,7 @@ static void add_app_action(MatlabLiteApp *self, const char *name, GCallback call
 void on_activate(GtkApplication *app, gpointer user_data) {
     (void)app;
 
-    MatlabLiteApp *self = static_cast<MatlabLiteApp *>(user_data);
+    MatpadApp *self = static_cast<MatpadApp *>(user_data);
 
     GtkCssProvider *css = gtk_css_provider_new();
     gtk_css_provider_load_from_string(css, CSS);
@@ -202,7 +212,7 @@ void on_activate(GtkApplication *app, gpointer user_data) {
     g_object_unref(css);
 
     self->win = adw_application_window_new(GTK_APPLICATION(self->app));
-    gtk_window_set_icon_name(GTK_WINDOW(self->win), "matlab-lite");
+    gtk_window_set_icon_name(GTK_WINDOW(self->win), "matpad");
     update_title(self);
     gtk_window_set_default_size(GTK_WINDOW(self->win), 900, 650);
 
@@ -213,6 +223,7 @@ void on_activate(GtkApplication *app, gpointer user_data) {
     g_menu_append(menu, "Open...", "app.open_file");
     g_menu_append(menu, "Save", "app.save_file");
     g_menu_append(menu, "Save As...", "app.save_file_as");
+    g_menu_append(menu, "Settings", "app.settings");
     g_menu_append(menu, "App Info", "app.app_info");
 
     GtkWidget *menu_button = gtk_menu_button_new();
@@ -233,7 +244,8 @@ void on_activate(GtkApplication *app, gpointer user_data) {
     add_app_action(self, "open_file", G_CALLBACK(action_open_file), "<Control>o");
     add_app_action(self, "save_file", G_CALLBACK(action_save_file), "<Control>s");
     add_app_action(self, "save_file_as", G_CALLBACK(action_save_file_as), "<Control><Shift>s");
-    add_app_action(self, "app_info", G_CALLBACK(action_app_info), nullptr);
+    add_app_action(self, "settings", G_CALLBACK(action_app_settings), "<Control>comma");
+    add_app_action(self, "app_info", G_CALLBACK(action_app_info), "<Control>i");
 
     GSimpleAction *run_action = g_simple_action_new("run_script", nullptr);
     g_signal_connect(run_action, "activate", G_CALLBACK(action_run_script), self);
@@ -245,14 +257,14 @@ void on_activate(GtkApplication *app, gpointer user_data) {
     self->buffer = gtk_source_buffer_new(nullptr);
     gtk_text_buffer_set_text(GTK_TEXT_BUFFER(self->buffer), "\n", -1);
 
+    settings_load(self);
+
     GtkSourceStyleSchemeManager *scheme_mgr = gtk_source_style_scheme_manager_get_default();
     GtkSourceStyleScheme *scheme = gtk_source_style_scheme_manager_get_scheme(scheme_mgr, "adwaita-dark");
     if (!scheme) scheme = gtk_source_style_scheme_manager_get_scheme(scheme_mgr, "classic-dark");
     if (scheme) gtk_source_buffer_set_style_scheme(self->buffer, scheme);
 
-    GtkSourceLanguageManager *lang_mgr = gtk_source_language_manager_get_default();
-    GtkSourceLanguage *matlab_lang = gtk_source_language_manager_get_language(lang_mgr, "matlab");
-    if (matlab_lang) gtk_source_buffer_set_language(self->buffer, matlab_lang);
+    settings_apply_editor_language(self);
 
     self->editor = GTK_SOURCE_VIEW(gtk_source_view_new_with_buffer(self->buffer));
     gtk_widget_add_css_class(GTK_WIDGET(self->editor), "sourceview");

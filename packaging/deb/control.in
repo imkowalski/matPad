@@ -1,9 +1,9 @@
-Package: matlab-lite
+Package: matpad
 Version: @VERSION@
 Section: utils
 Priority: optional
 Architecture: @ARCH@
-Maintainer: MATLAB Lite
+Maintainer: MatPad
 Depends: @DEPENDS@
 Description: MATLAB editor with script execution and plot previews
- MATLAB Lite is a GTK 4 and libadwaita desktop editor for MATLAB scripts.
+ MatPad is a GTK 4 and libadwaita desktop editor for MATLAB scripts.

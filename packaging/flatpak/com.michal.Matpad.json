@@ -1,10 +1,10 @@
 {
-  "app-id": "com.michal.MatlabLite",
+  "app-id": "com.michal.Matpad",
   "runtime": "org.gnome.Platform",
   "runtime-version": "48",
   "sdk": "org.gnome.Sdk",
   "branch": "stable",
-  "command": "matlab-lite",
+  "command": "matpad",
   "finish-args": [
     "--share=network",
     "--socket=wayland",
@@ -14,7 +14,7 @@
   ],
   "modules": [
     {
-      "name": "matlab-lite",
+      "name": "matpad",
       "buildsystem": "cmake-ninja",
       "config-opts": [
         "-DCMAKE_BUILD_TYPE=Release"

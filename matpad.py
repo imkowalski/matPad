@@ -48,11 +48,11 @@ CSS = """
 """
 
 
-class MatlabLite(Adw.Application):
+class MatPad(Adw.Application):
 
     def __init__(self):
         super().__init__(
-            application_id="com.michal.MatlabLite",
+            application_id="com.michal.Matpad",
             flags=Gio.ApplicationFlags.FLAGS_NONE
         )
         self.current_file = None
@@ -171,7 +171,7 @@ class MatlabLite(Adw.Application):
         self.win.present()
 
     def update_title(self):
-        title = "MATLAB Lite"
+        title = "MatPad"
         if self.current_file:
             title += f" - {os.path.basename(self.current_file)}"
         self.win.set_title(title)
@@ -361,5 +361,5 @@ end
         self.matlab_process = None
 
 
-app = MatlabLite()
+app = MatPad()
 app.run()

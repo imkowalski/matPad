@@ -2,5 +2,5 @@
 
 #include "app_context.h"
 
-void update_title(MatlabLiteApp *self);
-void write_to_file(MatlabLiteApp *self, const char *path);
+void update_title(MatpadApp *self);
+void write_to_file(MatpadApp *self, const char *path);

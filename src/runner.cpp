@@ -2,6 +2,7 @@
 
 #include "app_utils.h"
 #include "image_preview.h"
+#include "settings.h"
 
 #include <adwaita.h>
 
@@ -18,8 +19,6 @@
 #include <thread>
 #include <unistd.h>
 #include <vector>
-
-#define MATLAB_PATH "/usr/local/bin/matlab"
 
 static bool running_in_flatpak() {
     return g_getenv("FLATPAK_ID") != nullptr;
@@ -38,9 +37,9 @@ static std::string shell_quote(const std::string &value) {
     return quoted;
 }
 
-static std::string resolve_matlab_command() {
-    const char *override_cmd = g_getenv("MATLAB_LITE_MATLAB_CMD");
-    std::string command = (override_cmd && *override_cmd) ? override_cmd : MATLAB_PATH;
+static std::string resolve_interpreter_command(MatpadApp *self) {
+    const char *override_cmd = g_getenv("MATPAD_MATLAB_CMD");
+    std::string command = (override_cmd && *override_cmd) ? override_cmd : settings_interpreter(self);
 
     if (running_in_flatpak()) {
         return std::string("flatpak-spawn --host ") + shell_quote(command);
@@ -51,14 +50,14 @@ static std::string resolve_matlab_command() {
 
 static std::string resolve_workspace_dir() {
     if (running_in_flatpak()) {
-        return std::string(g_get_user_cache_dir()) + "/matlab-lite";
+        return std::string(g_get_user_cache_dir()) + "/matpad";
     }
 
     return g_get_tmp_dir();
 }
 
 typedef struct {
-    MatlabLiteApp *self;
+    MatpadApp *self;
     std::string output_text;
     std::vector<std::string> figure_paths;
 } ThreadResult;
@@ -102,7 +101,7 @@ static void remove_old_figure_cache(const std::string &temp_dir, const std::stri
 
 static gboolean update_ui_after_run(gpointer user_data) {
     ThreadResult *res = static_cast<ThreadResult *>(user_data);
-    MatlabLiteApp *self = res->self;
+    MatpadApp *self = res->self;
 
     GtkWidget *child = gtk_widget_get_first_child(self->output_box);
     while (child != nullptr) {
@@ -140,24 +139,69 @@ static gboolean update_ui_after_run(gpointer user_data) {
     return G_SOURCE_REMOVE;
 }
 
-static void execute_matlab_thread(MatlabLiteApp *self, std::string code) {
-    std::string base_name;
+static std::string capture_output(const std::string &cmd) {
+    std::string raw_output;
+    FILE *pipe = popen(cmd.c_str(), "r");
+    if (pipe) {
+        char buffer[256];
+        while (fgets(buffer, sizeof(buffer), pipe) != nullptr) {
+            raw_output += buffer;
+        }
+        pclose(pipe);
+    }
+    return raw_output;
+}
 
-    if (self->current_file) {
-        std::string path(self->current_file);
-        size_t idx = path.find_last_of("/\\");
-        std::string filename = (idx == std::string::npos) ? path : path.substr(idx + 1);
-        size_t last_dot = filename.find_last_of('.');
-        base_name = (last_dot == std::string::npos) ? filename : filename.substr(0, last_dot);
-    } else {
-        base_name = "Untitled_Plot";
+static std::string clean_output(const std::string &raw) {
+    std::string ansi_clean;
+    for (size_t i = 0; i < raw.size(); ++i) {
+        if (raw[i] == '\x1b' && i + 1 < raw.size() && raw[i + 1] == '[') {
+            i += 2;
+            while (i < raw.size() && !isalpha(static_cast<unsigned char>(raw[i]))) {
+                i++;
+            }
+        } else {
+            ansi_clean += raw[i];
+        }
     }
 
+    std::string printable_clean;
+    for (char ch : ansi_clean) {
+        if (ch >= 32 || ch == '\n' || ch == '\t') {
+            printable_clean += ch;
+        }
+    }
+
+    std::regex warning_pattern(
+        "(libGL|Mesa|Fontconfig|Gtk-WARNING|DirectRendering|dri3|OpenGL|pci|Driver|XServer|Graphics acceleration|software opengl|Warning:|performance might be diminished|System Requirements|In alternatePrintPath|In print|In saveas|In tmp)",
+        std::regex_constants::icase
+    );
+
+    std::stringstream ss(printable_clean);
+    std::string line;
+    std::string clean_output;
+    while (std::getline(ss, line)) {
+        if (!std::regex_search(line, warning_pattern)) {
+            clean_output += line + "\n";
+        }
+    }
+
+    return clean_output;
+}
+
+static std::string derive_base_name(MatpadApp *self) {
+    if (!self->current_file) return "Untitled_Plot";
+
+    std::string path(self->current_file);
+    size_t idx = path.find_last_of("/\\");
+    std::string filename = (idx == std::string::npos) ? path : path.substr(idx + 1);
+    size_t last_dot = filename.find_last_of('.');
+    return (last_dot == std::string::npos) ? filename : filename.substr(0, last_dot);
+}
+
+static void execute_matlab(MatpadApp *self, const std::string &code, const std::string &fig_prefix) {
     std::string temp_dir = resolve_workspace_dir();
     g_mkdir_with_parents(temp_dir.c_str(), 0700);
-    std::string fig_prefix = temp_dir + "/" + base_name + "_Plot";
-
-    remove_old_figure_cache(temp_dir, base_name);
 
     char script_path[] = "/tmp/matlab_script_XXXXXX.m";
     int fd = mkstemps(script_path, 2);
@@ -195,79 +239,83 @@ static void execute_matlab_thread(MatlabLiteApp *self, std::string code) {
         setenv("MESA_DEBUG", "0", 1);
         setenv("QT_X11_NO_MITSHM", "1", 1);
 
-        std::string cmd = resolve_matlab_command() + " -batch \"warning('off','all'); addpath('" +
+        std::string cmd = resolve_interpreter_command(self) + " -batch \"warning('off','all'); addpath('" +
                   script_dir + "'); " + script_name + ";\" 2>&1";
 
-        FILE *pipe = popen(cmd.c_str(), "r");
-        if (pipe) {
-            char buffer[256];
-            std::string raw_output;
-            while (fgets(buffer, sizeof(buffer), pipe) != nullptr) {
-                raw_output += buffer;
-            }
-            pclose(pipe);
+        output_text = clean_output(capture_output(cmd));
 
-            std::string ansi_clean;
-            for (size_t i = 0; i < raw_output.size(); ++i) {
-                if (raw_output[i] == '\x1b' && i + 1 < raw_output.size() && raw_output[i + 1] == '[') {
-                    i += 2;
-                    while (i < raw_output.size() && !isalpha(static_cast<unsigned char>(raw_output[i]))) {
-                        i++;
-                    }
-                } else {
-                    ansi_clean += raw_output[i];
-                }
-            }
-
-            std::string printable_clean;
-            for (char ch : ansi_clean) {
-                if (ch >= 32 || ch == '\n' || ch == '\t') {
-                    printable_clean += ch;
-                }
-            }
-
-            raw_output = printable_clean;
-            std::regex warning_pattern(
-                "(libGL|Mesa|Fontconfig|Gtk-WARNING|DirectRendering|dri3|OpenGL|pci|Driver|XServer|Graphics acceleration|software opengl|Warning:|performance might be diminished|System Requirements|In alternatePrintPath|In print|In saveas|In tmp)",
-                std::regex_constants::icase
-            );
-
-            std::stringstream ss(raw_output);
-            std::string line;
-            std::string clean_output;
-
-            while (std::getline(ss, line)) {
-                if (!std::regex_search(line, warning_pattern)) {
-                    clean_output += line + "\n";
-                }
-            }
-
-            output_text = clean_output;
-
-            int idx = 1;
-            while (true) {
-                std::string path = fig_prefix + "_" + std::to_string(idx) + ".png";
-                if (g_file_test(path.c_str(), G_FILE_TEST_EXISTS)) {
-                    figure_paths.push_back(path);
-                    idx++;
-                } else {
-                    break;
-                }
+        int idx = 1;
+        while (true) {
+            std::string path = fig_prefix + "_" + std::to_string(idx) + ".png";
+            if (g_file_test(path.c_str(), G_FILE_TEST_EXISTS)) {
+                figure_paths.push_back(path);
+                idx++;
+            } else {
+                break;
             }
         }
     } catch (const std::exception &e) {
         output_text = e.what();
     }
 
-    unlink(script_path_str.c_str());
+    unlink(script_path);
 
     ThreadResult *res = new ThreadResult{self, output_text, figure_paths};
     g_idle_add(update_ui_after_run, res);
 }
 
+static void execute_python(MatpadApp *self, const std::string &code) {
+    char script_path[] = "/tmp/matlab_script_XXXXXX.py";
+    int fd = mkstemps(script_path, 3);
+    if (fd == -1) return;
+    close(fd);
+
+    std::ofstream script_file(script_path);
+    if (self->python_prepend && *self->python_prepend) {
+        script_file << self->python_prepend << "\n\n";
+    }
+    script_file << code;
+    script_file.close();
+
+    std::string output_text;
+    std::vector<std::string> figure_paths;
+
+    try {
+        setenv("LIBGL_ALWAYS_SOFTWARE", "1", 1);
+        setenv("MESA_DEBUG", "0", 1);
+        setenv("QT_X11_NO_MITSHM", "1", 1);
+        setenv("PYTHONUNBUFFERED", "1", 1);
+
+        std::string cmd = resolve_interpreter_command(self) + " " + shell_quote(script_path) + " 2>&1";
+        output_text = clean_output(capture_output(cmd));
+    } catch (const std::exception &e) {
+        output_text = e.what();
+    }
+
+    unlink(script_path);
+
+    ThreadResult *res = new ThreadResult{self, output_text, figure_paths};
+    g_idle_add(update_ui_after_run, res);
+}
+
+static void execute_script_thread(MatpadApp *self, std::string code) {
+    std::string base_name = derive_base_name(self);
+    std::string temp_dir = resolve_workspace_dir();
+    g_mkdir_with_parents(temp_dir.c_str(), 0700);
+
+    if (self->use_python) {
+        execute_python(self, code);
+        return;
+    }
+
+    std::string fig_prefix = temp_dir + "/" + base_name + "_Plot";
+    remove_old_figure_cache(temp_dir, base_name);
+    execute_matlab(self, code, fig_prefix);
+}
+
 void on_run_clicked(GtkWidget *widget, gpointer user_data) {
     (void)widget;
-    MatlabLiteApp *self = static_cast<MatlabLiteApp *>(user_data);
+    MatpadApp *self = static_cast<MatpadApp *>(user_data);
 
     GtkTextIter start, end;
     gtk_text_buffer_get_bounds(GTK_TEXT_BUFFER(self->buffer), &start, &end);
@@ -283,14 +331,18 @@ void on_run_clicked(GtkWidget *widget, gpointer user_data) {
     gtk_widget_set_sensitive(self->stop_button, TRUE);
     gtk_label_set_text(GTK_LABEL(self->output_label), "Running script...");
 
-    std::thread(execute_matlab_thread, self, code).detach();
+    std::thread(execute_script_thread, self, code).detach();
 }
 
 void on_stop_clicked(GtkWidget *widget, gpointer user_data) {
     (void)widget;
-    MatlabLiteApp *self = static_cast<MatlabLiteApp *>(user_data);
+    MatpadApp *self = static_cast<MatpadApp *>(user_data);
 
-    std::system("pkill -f /usr/local/bin/matlab");
+    std::string interp = settings_interpreter(self);
+    size_t idx = interp.find_last_of("/\\");
+    std::string name = (idx == std::string::npos) ? interp : interp.substr(idx + 1);
+
+    std::system(("pkill -f " + name).c_str());
 
     gtk_label_set_text(GTK_LABEL(self->output_label), "Execution stopped by user.");
     gtk_widget_set_sensitive(self->stop_button, FALSE);

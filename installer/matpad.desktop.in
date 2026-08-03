@@ -1,10 +1,10 @@
 [Desktop Entry]
 Type=Application
-Name=MATLAB Lite
+Name=MatPad
 Comment=Simple MATLAB editor and plot preview tool
 Exec=__BIN__
 Icon=__ICON__
-StartupWMClass=com.michal.MatlabLite
+StartupWMClass=com.michal.Matpad
 Terminal=false
 Categories=Development;IDE;Graphics;
 StartupNotify=true

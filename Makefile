@@ -1,11 +1,12 @@
 .PHONY: all build clean run install-local deb rpm appimage
 
-APP_NAME := matlab-lite
-APP_ID := com.michal.MatlabLite
-VERSION ?= 1.0.1
+APP_NAME := matpad
+APP_ID := com.michal.Matpad
+VERSION ?= 1.1.0
 PROJECT_ROOT := $(CURDIR)
 BUILD_DIR := build
 DIST_DIR := dist
+RELEASE_DIR := release
 PACKAGE_DIR := $(BUILD_DIR)/packages
 DEB_ROOT := $(PACKAGE_DIR)/deb-root
 RPM_TOP := $(PACKAGE_DIR)/rpmbuild
@@ -25,7 +26,7 @@ clean:
 	@rm -rf build
 
 run: clean all 
-	@./build/matlab-lite
+	@./build/matpad
 
 install-local: build
 	@bash installer/install.sh
@@ -47,7 +48,7 @@ deb: build
 	@sed \
 		-e "s|__BIN__|/usr/bin/$(APP_NAME)|g" \
 		-e "s|__ICON__|$(APP_NAME)|g" \
-		installer/matlab-lite.desktop.in > "$(DEB_ROOT)/usr/share/applications/$(APP_NAME).desktop"
+		installer/matpad.desktop.in > "$(DEB_ROOT)/usr/share/applications/$(APP_NAME).desktop"
 	@dpkg-deb --build --root-owner-group "$(DEB_ROOT)" "$(DIST_DIR)/$(APP_NAME)_$(VERSION)_$(DEB_ARCH).deb"
 
 rpm: build
@@ -65,10 +66,22 @@ rpm: build
 		-e "s|@PROJECT_ROOT@|$(PROJECT_ROOT)|g" \
 		-e "s|@BUILD_DIR@|$(abspath $(BUILD_DIR))|g" \
 		-e "s|@REQUIRES@|$(RPM_REQUIRES)|g" \
-		packaging/rpm/matlab-lite.spec.in > "$(RPM_TOP)/SPECS/$(APP_NAME).spec"
+		packaging/rpm/matpad.spec.in > "$(RPM_TOP)/SPECS/$(APP_NAME).spec"
 	@sed \
-		-e "s|__BIN__|matlab-lite|g" \
-		-e "s|__ICON__|matlab-lite|g" \
-		installer/matlab-lite.desktop.in > "$(RPM_TOP)/SOURCES/$(APP_NAME).desktop"
+		-e "s|__BIN__|matpad|g" \
+		-e "s|__ICON__|matpad|g" \
+		installer/matpad.desktop.in > "$(RPM_TOP)/SOURCES/$(APP_NAME).desktop"
 	@rpmbuild --define "_topdir $(abspath $(RPM_TOP))" -bb "$(RPM_TOP)/SPECS/$(APP_NAME).spec"
 	@find "$(RPM_TOP)/RPMS" -name '*.rpm' -exec cp {} "$(DIST_DIR)"/ \;
+
+release-deb: deb 
+	@mkdir -p "$(RELEASE_DIR)"
+	@cp "$(DIST_DIR)/$(APP_NAME)_$(VERSION)_$(DEB_ARCH).deb" "$(RELEASE_DIR)/"
+
+release-rpm: rpm
+	@mkdir -p "$(RELEASE_DIR)"
+	@cp "$(DIST_DIR)/$(APP_NAME)-$(VERSION)-1.$(RPM_ARCH).rpm" "$(RELEASE_DIR)/"
+
+release: build release-deb release-rpm 
+	@mkdir -p "$(RELEASE_DIR)"
+	@cp "$(BUILD_DIR)/$(APP_NAME)" "$(RELEASE_DIR)/"

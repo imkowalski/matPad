@@ -5,16 +5,16 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 BUILD_DIR="$PROJECT_ROOT/build"
-SOURCE_BINARY="$BUILD_DIR/matlab-lite"
+SOURCE_BINARY="$BUILD_DIR/matpad"
 
 BIN_DIR="$HOME/.local/bin"
 APP_DIR="$HOME/.local/share/applications"
 ICON_DIR="$HOME/.local/share/icons/hicolor/256x256/apps"
 
-BIN_TARGET="$BIN_DIR/matlab-lite"
-DESKTOP_TARGET="$APP_DIR/matlab-lite.desktop"
-ICON_TARGET="$ICON_DIR/matlab-lite.png"
-DESKTOP_TEMPLATE="$SCRIPT_DIR/matlab-lite.desktop.in"
+BIN_TARGET="$BIN_DIR/matpad"
+DESKTOP_TARGET="$APP_DIR/matpad.desktop"
+ICON_TARGET="$ICON_DIR/matpad.png"
+DESKTOP_TEMPLATE="$SCRIPT_DIR/matpad.desktop.in"
 
 mkdir -p "$BIN_DIR" "$APP_DIR" "$ICON_DIR"
 
@@ -26,7 +26,7 @@ install -Dm644 "$PROJECT_ROOT/icon.png" "$ICON_TARGET"
 
 sed \
     -e "s|__BIN__|$BIN_TARGET|g" \
-    -e "s|__ICON__|matlab-lite|g" \
+    -e "s|__ICON__|matpad|g" \
     "$DESKTOP_TEMPLATE" > "$DESKTOP_TARGET"
 
 if command -v update-desktop-database >/dev/null 2>&1; then

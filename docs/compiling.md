@@ -1,4 +1,4 @@
-# Compiling MATLAB Lite
+# Compiling MatPad
 
 ## Build From Source
 
@@ -14,7 +14,6 @@ cmake --build build
 ```
 
 ## Build a Specific Version (deb/rpm)
-
 
 ```bash
 make deb

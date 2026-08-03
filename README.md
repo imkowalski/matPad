@@ -1,8 +1,8 @@
-# MATLAB Lite
+# MatPad
 
-MATLAB Lite is a GTK 4 + libadwaita editor for writing and running MATLAB scripts from a desktop window. It includes syntax-highlighted editing, quick actions for opening and saving scripts, inline script execution, and preview images for generated plots.
+MatPad is a GTK 4 + libadwaita editor for writing and running MATLAB scripts from a desktop window. It includes syntax-highlighted editing, quick actions for opening and saving scripts, inline script execution, and preview images for generated plots.
 
-GitHub repository: https://github.com/imkowalski/Matlab-lite
+GitHub repository: https://github.com/imkowalski/matpad
 
 ## Features
 
@@ -14,7 +14,7 @@ GitHub repository: https://github.com/imkowalski/Matlab-lite
 
 ## License
 
-MATLAB Lite is licensed under the GNU Affero General Public License v3.0 or later.
+MatPad is licensed under the GNU Affero General Public License v3.0 or later.
 
 ## Requirements
 

@@ -1,12 +1,12 @@
 cmake_minimum_required(VERSION 3.16)
-project(MatlabLite VERSION 1.0.1 LANGUAGES C CXX)
+project(Matpad VERSION 1.1.0 LANGUAGES C CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(PkgConfig REQUIRED)
 
-set(MATLAB_LITE_VERSION "${PROJECT_VERSION}")
+set(MATPAD_VERSION "${PROJECT_VERSION}")
 
 configure_file(
     ${CMAKE_CURRENT_SOURCE_DIR}/include/version.h.in
@@ -37,15 +37,16 @@ add_compile_options(
     ${SOURCEVIEW_CFLAGS_OTHER}
 )
 
-add_executable(matlab-lite
+add_executable(matpad
     src/main.cpp
     src/window.cpp
     src/app_utils.cpp
     src/runner.cpp
+    src/settings.cpp
     src/image_preview.cpp
 )
 
-target_include_directories(matlab-lite PRIVATE
+target_include_directories(matpad PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/include
     ${CMAKE_CURRENT_BINARY_DIR}/generated
     ${ADW_INCLUDE_DIRS}
@@ -54,11 +55,11 @@ target_include_directories(matlab-lite PRIVATE
 )
 
 install(FILES
-    ${CMAKE_CURRENT_SOURCE_DIR}/packaging/flatpak/com.michal.MatlabLite.metainfo.xml
+    ${CMAKE_CURRENT_SOURCE_DIR}/packaging/flatpak/com.michal.Matpad.metainfo.xml
     DESTINATION share/metainfo
 )
 
-target_link_libraries(matlab-lite
+target_link_libraries(matpad
     ${ADW_LIBRARIES}
     ${GTK_LIBRARIES}
     ${SOURCEVIEW_LIBRARIES}
