@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
-project(Matpad VERSION 1.1.0 LANGUAGES C CXX)
+project(Matpad VERSION 1.1.2 LANGUAGES C CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -57,6 +57,24 @@ target_include_directories(matpad PRIVATE
 install(FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/packaging/flatpak/com.michal.Matpad.metainfo.xml
     DESTINATION share/metainfo
+)
+
+set(BIN "matpad")
+set(ICON "matpad")
+configure_file(
+    ${CMAKE_CURRENT_SOURCE_DIR}/installer/matpad.desktop.in
+    ${CMAKE_CURRENT_BINARY_DIR}/com.michal.Matpad.desktop
+    @ONLY
+)
+
+install(FILES
+    ${CMAKE_CURRENT_BINARY_DIR}/com.michal.Matpad.desktop
+    DESTINATION share/applications
+)
+
+install(DIRECTORY
+    ${CMAKE_CURRENT_SOURCE_DIR}/data/icons/hicolor
+    DESTINATION share/icons
 )
 
 target_link_libraries(matpad

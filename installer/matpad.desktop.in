@@ -2,8 +2,8 @@
 Type=Application
 Name=MatPad
 Comment=Simple MATLAB editor and plot preview tool
-Exec=__BIN__
-Icon=__ICON__
+Exec=@BIN@
+Icon=@ICON@
 StartupWMClass=com.michal.Matpad
 Terminal=false
 Categories=Development;IDE;Graphics;

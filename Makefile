@@ -2,7 +2,7 @@
 
 APP_NAME := matpad
 APP_ID := com.michal.Matpad
-VERSION ?= 1.1.0
+VERSION ?= 1.1.2
 PROJECT_ROOT := $(CURDIR)
 BUILD_DIR := build
 DIST_DIR := dist
@@ -36,19 +36,19 @@ deb: build
 	@mkdir -p "$(DEB_ROOT)/DEBIAN" \
 		"$(DEB_ROOT)/usr/bin" \
 		"$(DEB_ROOT)/usr/share/applications" \
-		"$(DEB_ROOT)/usr/share/icons/hicolor/256x256/apps" \
+		"$(DEB_ROOT)/usr/share/icons/hicolor" \
 		"$(DIST_DIR)"
 	@install -Dm755 "$(BUILD_DIR)/$(APP_NAME)" "$(DEB_ROOT)/usr/bin/$(APP_NAME)"
-	@install -Dm644 "icon.png" "$(DEB_ROOT)/usr/share/icons/hicolor/256x256/apps/$(APP_NAME).png"
+	@cp -r "data/icons/hicolor/." "$(DEB_ROOT)/usr/share/icons/hicolor/"
 	@sed \
 		-e "s|@VERSION@|$(VERSION)|g" \
 		-e "s|@ARCH@|$(DEB_ARCH)|g" \
 		-e "s|@DEPENDS@|$(DEB_DEPENDS)|g" \
 		packaging/deb/control.in > "$(DEB_ROOT)/DEBIAN/control"
 	@sed \
-		-e "s|__BIN__|/usr/bin/$(APP_NAME)|g" \
-		-e "s|__ICON__|$(APP_NAME)|g" \
-		installer/matpad.desktop.in > "$(DEB_ROOT)/usr/share/applications/$(APP_NAME).desktop"
+		-e "s|@BIN@|/usr/bin/$(APP_NAME)|g" \
+		-e "s|@ICON@|$(APP_NAME)|g" \
+		installer/matpad.desktop.in > "$(DEB_ROOT)/usr/share/applications/$(APP_ID).desktop"
 	@dpkg-deb --build --root-owner-group "$(DEB_ROOT)" "$(DIST_DIR)/$(APP_NAME)_$(VERSION)_$(DEB_ARCH).deb"
 
 rpm: build
@@ -68,9 +68,9 @@ rpm: build
 		-e "s|@REQUIRES@|$(RPM_REQUIRES)|g" \
 		packaging/rpm/matpad.spec.in > "$(RPM_TOP)/SPECS/$(APP_NAME).spec"
 	@sed \
-		-e "s|__BIN__|matpad|g" \
-		-e "s|__ICON__|matpad|g" \
-		installer/matpad.desktop.in > "$(RPM_TOP)/SOURCES/$(APP_NAME).desktop"
+		-e "s|@BIN@|matpad|g" \
+		-e "s|@ICON@|matpad|g" \
+		installer/matpad.desktop.in > "$(RPM_TOP)/SOURCES/$(APP_ID).desktop"
 	@rpmbuild --define "_topdir $(abspath $(RPM_TOP))" -bb "$(RPM_TOP)/SPECS/$(APP_NAME).spec"
 	@find "$(RPM_TOP)/RPMS" -name '*.rpm' -exec cp {} "$(DIST_DIR)"/ \;
 

@@ -16,10 +16,13 @@ MatPad is a GTK 4 and libadwaita desktop editor for MATLAB scripts.
 %install
 rm -rf %{buildroot}
 install -D -m 755 "@BUILD_DIR@/matpad" "%{buildroot}/usr/bin/matpad"
-install -D -m 644 "@PROJECT_ROOT@/icon.png" "%{buildroot}/usr/share/icons/hicolor/256x256/apps/matpad.png"
-install -D -m 644 "%{_sourcedir}/matpad.desktop" "%{buildroot}/usr/share/applications/matpad.desktop"
+for icon in "@PROJECT_ROOT@"/data/icons/hicolor/*/apps/matpad.png; do \
+    size="$(basename "$(dirname "$(dirname "$icon")")")"; \
+    install -D -m 644 "$icon" "%{buildroot}/usr/share/icons/hicolor/${size}/apps/matpad.png"; \
+done
+install -D -m 644 "%{_sourcedir}/com.michal.Matpad.desktop" "%{buildroot}/usr/share/applications/com.michal.Matpad.desktop"
 
 %files
 /usr/bin/matpad
-/usr/share/applications/matpad.desktop
-/usr/share/icons/hicolor/256x256/apps/matpad.png
+/usr/share/applications/com.michal.Matpad.desktop
+/usr/share/icons/hicolor/*/apps/matpad.png
